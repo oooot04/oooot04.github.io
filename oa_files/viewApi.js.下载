@@ -1,0 +1,92 @@
+// require('mobile');
+
+mui.init();
+//初始化单页view
+var viewApi = mui('#app').view({
+    defaultPage: '#main'
+});
+var view = viewApi.view;
+(function($) {
+    // appv.$root.$refs.toastr.defaultTimeout = 4000;
+    //处理view的后退与webview后退
+    var oldBack = $.back;
+    $.back = function() {
+        // console.log(viewApi.activePage.id )
+        if (viewApi.canBack()) { //如果view可以后退，则执行view的后退
+            if('eatsuc' == viewApi.activePage.id){
+                mui.confirm('取餐后，再退出。确定已取餐？', ' ', ['取消','确定'], function(e) {
+                    if (e.index == 1){
+                        clearInterval(t)
+                        viewApi.back();
+                    }
+                },'div')
+            }else
+                viewApi.back();
+        } else { //执行webview后退
+            oldBack();
+        }
+    };
+    //监听页面切换事件方案1,通过view元素监听所有页面切换事件，目前提供pageBeforeShow|pageShow|pageBeforeBack|pageBack四种事件(before事件为动画开始前触发)
+    //第一个参数为事件名称，第二个参数为事件回调，其中e.detail.page为当前页面的html对象
+    view.addEventListener('pageBeforeShow', function(e) {
+        // console.log(e.detail.page.id + ' pageBeforeShow');
+        // console.log(e.detail)
+        // if(e.detail.page.id == 'play'){
+        //     var target = parentsElm(e.detail.event.target,'hd')
+        //     if(!appv.roomstate)   appv.joinRoom( target.dataset.index, target.dataset.roomtype);  //加入房间
+        // }
+        // if(e.detail.page.id == 'ad'){
+        //     var target = e.detail.event.target;
+        //     if(e.detail.event.target.tagName=="IMG"){
+        //         target = e.detail.event.target.parentNode;
+        //     }
+        //     appv.adselected = target.dataset.index;
+        // }
+    });
+    view.addEventListener('pageShow', function(e) {
+        // console.log(e.detail.page.offsetTop)
+        // console.log(e.detail.page.id )
+        var pageShowCB = 'pageShow'+e.detail.page.id
+        if(typeof window[pageShowCB] != 'undefined') window[pageShowCB].call(this)
+    });
+    view.addEventListener('pageBeforeBack', function(e) {
+        // console.log(e.detail.page.id + ' pageBeforeBack');
+        if(e.detail.page.id == 'play'){
+        }
+    });
+    view.addEventListener('pageBack', function(e) {
+        // console.log(e.detail.page.id + ' pageBack');
+    });
+
+    //----------处理页面激活------------
+    var hiddenProperty = 'hidden' in document ? 'hidden' :
+        'webkitHidden' in document ? 'webkitHidden' :
+            'mozHidden' in document ? 'mozHidden' :
+                null;
+    var visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
+    var onVisibilityChange = function(){
+        if (!document[hiddenProperty]) {
+            if(!sessionStorage.bgmusic||sessionStorage.bgmusic=='play'){
+                //页面激活
+            }
+        }else{
+            //页面隐藏
+        }
+    }
+    document.addEventListener('webkitvisibilitychange', onVisibilityChange);
+})(mui);
+
+(function($) {
+    // 禁用 android 长按弹出菜单
+    window.addEventListener('contextmenu', function(e){
+        e.preventDefault();
+    });
+    document.addEventListener('homeloaded',homeloaded)
+    function homeloaded(){
+        if(AppInfo.homeloaded) return;
+        mui('.mui-scroll-wrapper').scroll();
+        AppInfo.homeloaded = true;
+
+    }
+})();
+// module.exports = viewApi;

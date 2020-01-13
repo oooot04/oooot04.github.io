@@ -1,0 +1,163 @@
+var page =1;
+submitCom = 0;
+isdel = 0;
+
+// mui.previewImage();
+var seconds = 1;var t;
+window['up_bxList'] = function (cb_complete, postdata1){
+    var postdata = {'page':page,'submit':submitCom};
+    if(typeof postdata1 != 'undefined')	postdata =	mui.extend(true, postdata, postdata1);
+    mui.ajax(app.getUrl('oa/bxshlist'),{
+        data:	postdata,
+        dataType: 'json',
+        type:"post",
+        timeout:15000,
+        success: function (data) {
+            // console.log('up_BX列表:'+page + JSON.stringify(data));
+            if(data.msg) mui.alert(data.msg)
+            if(data.result >0){
+                APPV.power = data.power;
+                APPV.items = page==1?data.list:APPV.items.concat(data.list);
+                page=parseInt(data.page)+1;
+                if(typeof cb_complete =='function') cb_complete(data.list.length==0);
+            }
+        },
+        error:function(xhr,type,errorThrown){
+            if(typeof cb_complete =='function') cb_complete();
+            // console.log("服务器超时1:"+":"+type+":"+errorThrown+":"+JSON.stringify(xhr));
+            mui.alert('服务器连接超时：请确保网络通畅')
+        },
+        complete:function(xhr, status,a){
+            if(typeof cb_complete =='function') cb_complete();
+            submitCom = 0;//复位指令
+            if(window.plus)	plus.nativeUI.closeWaiting();
+        }
+    });
+}
+
+window['down_bxList'] = function(cb_complete,postdata1){
+    page = 1;
+    up_bxList(cb_complete,postdata1);
+};
+window['pageShowbxListPage'] = function(cb_complete,postdata1){
+    // down_bxList();
+    // console.log('pageShowbxListPage',postdata1);
+    // if(window.plus){
+    //     plusReady();
+    // }else{
+    //     plusReady();
+    //     document.addEventListener('plusready', plusReady, false);
+    // }
+};
+
+
+
+APPV = new Vue({
+    el: '#appmain',
+    data: {
+        banner:{},
+        items:[]
+    },
+    computed:{
+        isDebug : function(){
+            return document.location.hostname != '121.12.248.99';
+        },
+        cxingming : function(){
+            return this.banner.xingming+'['+this.banner.deptname+']';
+        },
+        cphone : function(){
+            return this.banner.phone;//+(this.banner.phone2?'/'+this.banner.phone2:'');
+        }
+    },
+    methods:{
+    },
+    mounted: mounted
+});
+function mounted(){
+    mui.each(document.querySelectorAll('.pull-refresh'), function(index, pullRefreshEl) {
+        op = {
+            down: {
+                // tips:{size:50},
+                callback: function() {
+                    var self = this;
+                    cb_pull_down = pullRefreshEl.id;
+                    window['down_'+cb_pull_down](function(){
+                        self.endPullDownToRefresh();
+                    })
+                }
+            },
+            up: {
+                contentinit: '下拉刷新,上拉更多',
+                contentdown: '下拉刷新,上拉更多',
+                callback: function() {
+                    var self = this;
+                    cb_pull_up = pullRefreshEl.id;
+                    window['up_'+cb_pull_up](function(isend){
+                        self.endPullUpToRefresh(isend?isend:false);
+                    })
+                }
+            }
+        };
+        if(pullRefreshEl.dataset.auto){
+            op.up.auto = true;
+        }
+        if(pullRefreshEl.classList.contains('pull-refresh-down')){
+            console.log('删除up')
+            delete op.up;
+        }
+        if(pullRefreshEl.classList.contains('pull-refresh-up')){
+            console.log('删除down')
+            delete op.down;
+            op.up.contentinit='上拉显示更多';
+            op.up.contentdown='上拉显示更多';
+        }
+        mui(pullRefreshEl).pullToRefresh(op);
+    });
+}
+
+
+(function($) {
+
+    UII = {
+        icontact: document.getElementById('contact'),
+    }
+
+    var ds = null;
+    // document.body.innerText +="innerText ";
+
+    // document.body.innerText +="innerText ";
+    $(document).on('tap', '.open', function () {
+        // document.body.innerText +="CLICK ";
+        scan.openScan();
+        ds = window.setInterval(function () {
+            startScan();
+        }, 1500);
+    });
+    $(document).on('click','.close', function () {
+        scan.closeScan();
+        window.clearInterval(ds);
+    });
+
+    var re_div = document.getElementById('result');
+    function startScan() {
+        scan.getImgDecode(function (data) {
+            console.log('getImgDecodeSuc',data);
+            var p = document.createElement('p');
+            if (data.success) {
+                p.innerHTML = 'RESULT: ' + data.payload;
+            } else {
+                p.innerHTML = 'ERROR: ' + data.msg;
+            }
+            re_div.appendChild(p);
+        });
+    };
+
+    var scan = new QRScan('video');
+
+    mui.ready(function(){
+        // var state = app.getState();
+        // console.log(JSON.stringify(state))
+        // VLIST.banner = state;
+    })
+})(mui);
+
