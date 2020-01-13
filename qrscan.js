@@ -34,11 +34,12 @@
             var self = this;
             self.div_can = doc.getElementById(self.div_id);
             navigator.mediaDevices.enumerateDevices().then(function(devices) {
+				console.log('devices',devices);
                 devices.forEach(function (dv) {
                     var kind = dv.kind;
                     if (kind.match(/^video.*/)) {
                         self.videos.push(dv.deviceId);
-                        console.log(dv);
+                        console.log('dv',dv);
                     }
                 });
                 var len = self.videos.length;
