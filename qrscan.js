@@ -55,11 +55,13 @@
             if (self.can_open) {
                 var vd = doc.createElement('video');
                 vd.setAttribute('id', 'video_id');
+					console.log('getUserMedia',navigator.mediaDevices);
                 navigator.mediaDevices.getUserMedia(self.medioConfig).then(function (stream) {
                     vd.src = win.URL.createObjectURL(stream);
                     //  vd.srcObject = stream  在新的浏览器中需使用此代替createObjectURL
                     self.div_can.appendChild(vd);
                 }).catch(function (err) {
+					console.log('err',err);
                     var p = doc.createElement('p');
                     p.innerHTML = 'ERROR: ' + err.name +
                                   '<br>该浏览器不支持调用摄像头，请使用夸克浏览器';
