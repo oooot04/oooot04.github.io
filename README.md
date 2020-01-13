@@ -1,1 +1,2 @@
-# oooot04.github.io
+JS实现二维扫码功能
+JS获取位置信息
