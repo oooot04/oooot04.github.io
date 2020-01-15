@@ -34,19 +34,19 @@
             var self = this;
             self.div_can = doc.getElementById(self.div_id);
             navigator.mediaDevices.enumerateDevices().then(function(devices) {
-				console.log('devices',devices);
+					console.log('devices', devices);
                 devices.forEach(function (dv) {
                     var kind = dv.kind;
                     if (kind.match(/^video.*/)) {
                         self.videos.push(dv.deviceId);
-                        console.log('dv',dv);
+                        console.log('video',json_encode(dv));
                     }
                 });
                 var len = self.videos.length;
                 self.can_open = true;
                 self.medioConfig = {
                     audio: false,
-                    video: { deviceId: self.videos[len - 1] }
+                    video: { deviceId: self.videos[len - 1] , facingMode: { exact: "environment" }}
                 }
             });
         },
@@ -55,7 +55,8 @@
             if (self.can_open) {
                 var vd = doc.createElement('video');
                 vd.setAttribute('id', 'video_id');
-					console.log('getUserMedia',navigator.mediaDevices);
+				console.log('mediaDevices',self.medioConfig);
+				console.log('getUserMedia',navigator.mediaDevices);
                 navigator.mediaDevices.getUserMedia(self.medioConfig).then(function (stream) {
                     vd.src = win.URL.createObjectURL(stream);
                     //  vd.srcObject = stream  在新的浏览器中需使用此代替createObjectURL
